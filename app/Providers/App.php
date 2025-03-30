@@ -15,23 +15,7 @@ class App extends ServiceProvider
     public function boot(): void
     {
         $this->configuration();
-    }
-
-    /**
-     * @return void
-     */
-    protected function locale(): void
-    {
-        $locale = config('app.locale_system')[config('app.locale')];
-
-        setlocale(LC_COLLATE, $locale);
-        setlocale(LC_CTYPE, $locale);
-        setlocale(LC_MONETARY, $locale);
-        setlocale(LC_TIME, $locale);
-
-        if (defined('LC_MESSAGES')) {
-            setlocale(LC_MESSAGES, $locale);
-        }
+        $this->language();
     }
 
     /**
@@ -40,5 +24,13 @@ class App extends ServiceProvider
     protected function configuration(): void
     {
         $this->factory('Configuration')->action()->appBind();
+    }
+
+    /**
+     * @return void
+     */
+    protected function language(): void
+    {
+        $this->factory('Language')->action()->set();
     }
 }

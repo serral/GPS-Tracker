@@ -13,7 +13,7 @@ class LocationLbs extends ParserAbstract
     {
         $this->values = [];
 
-        if ($this->bodyIsValid() === false) {
+        if ($this->messageIsValid() === false) {
             return [];
         }
 
@@ -25,16 +25,16 @@ class LocationLbs extends ParserAbstract
     /**
      * @return bool
      */
-    public function bodyIsValid(): bool
+    public function messageIsValid(): bool
     {
         return ($this->data['serial'] ?? false)
-            && (bool)preg_match($this->bodyIsValidRegExp(), $this->body, $this->values);
+            && (bool)preg_match($this->messageIsValidRegExp(), $this->message, $this->values);
     }
 
     /**
      * @return string
      */
-    protected function bodyIsValidRegExp(): string
+    protected function messageIsValidRegExp(): string
     {
         return '/^'
             .'(7878)'         //  1 - start
@@ -74,7 +74,7 @@ class LocationLbs extends ParserAbstract
     {
         return $this->cache[__FUNCTION__] ??= $this->latitudeLongitude(
             $this->values[6],
-            ($this->statusValue()[4] === '1')
+            ($this->statusValue()[5] === '0')
         );
     }
 
@@ -85,7 +85,7 @@ class LocationLbs extends ParserAbstract
     {
         return $this->cache[__FUNCTION__] ??= $this->latitudeLongitude(
             $this->values[7],
-            ($this->statusValue()[5] === '0')
+            ($this->statusValue()[4] === '1')
         );
     }
 
@@ -127,7 +127,7 @@ class LocationLbs extends ParserAbstract
      */
     protected function direction(): int
     {
-        return $this->cache[__FUNCTION__] ??= bindec(substr($this->statusValue(), 6));
+        return $this->cache[__FUNCTION__] ??= bindec(substr($this->statusValue(), 6, 10));
     }
 
     /**

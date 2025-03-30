@@ -147,16 +147,16 @@ class StartPort extends ActionAbstract
     }
 
     /**
-     * @param string $body
+     * @param string $message
      * @param array $data = []
      *
      * @return array
      */
-    protected function store(string $body, array $data = []): array
+    protected function store(string $message, array $data = []): array
     {
-        $this->logDebug($body);
+        $this->logDebug($message);
 
-        $resources = $this->protocol->resources($body, $data);
+        $resources = $this->protocol->resources($message, $data);
 
         if (empty($resources)) {
             return [];
@@ -170,23 +170,14 @@ class StartPort extends ActionAbstract
     }
 
     /**
-     * @param string $body
-     *
-     * @return string
-     */
-    protected function logContent(string $body): string
-    {
-        return '['.date('c').'] '.$body."\n";
-    }
-
-    /**
      * @param \App\Services\Protocol\Resource\ResourceAbstract $resource
      *
      * @return void
      */
     protected function save(ResourceAbstract $resource): void
     {
-        $this->log($resource->body());
+        $this->log($resource->message());
+        $this->logDebug($resource->toJson());
 
         if ($resource->format() === 'location') {
             $this->factory('Position')->action($this->saveData($resource))->create();
@@ -209,34 +200,36 @@ class StartPort extends ActionAbstract
             'signal' => $resource->signal(),
             'date_utc_at' => $resource->datetime(),
             'timezone' => $resource->timezone(),
+
+            'debug' => $this->data['debug'],
         ];
     }
 
     /**
-     * @param string $body
+     * @param string $message
      *
      * @return void
      */
-    protected function logDebug(string $body): void
+    protected function logDebug(string $message): void
     {
         if ($this->data['debug']) {
-            $this->log($body, '-debug');
+            $this->log($message, '-debug');
         }
     }
 
     /**
-     * @param string $body
+     * @param string $message
      * @param string $suffix = ''
      *
      * @return void
      */
-    protected function log(string $body, string $suffix = ''): void
+    protected function log(string $message, string $suffix = ''): void
     {
         $file = $this->logFile($suffix);
 
         Directory::create($file, true);
 
-        file_put_contents($file, $this->logContent($body), LOCK_EX | FILE_APPEND);
+        file_put_contents($file, $this->logContent($message), LOCK_EX | FILE_APPEND);
     }
 
     /**
@@ -247,5 +240,15 @@ class StartPort extends ActionAbstract
     protected function logFile(string $suffix = ''): string
     {
         return base_path('storage/logs/server/'.date('Y/m/d').'/'.$this->row->port.$suffix.'.log');
+    }
+
+    /**
+     * @param string $message
+     *
+     * @return string
+     */
+    protected function logContent(string $message): string
+    {
+        return '['.date('c').'] '.$message."\n";
     }
 }
