@@ -7,12 +7,26 @@ use App\Domains\Language\Model\Language as Model;
 class Request extends ActionAbstract
 {
     /**
+     * @var string
+     */
+    protected string $acceptLanguage;
+
+    /**
      * @return void
      */
     public function handle(): void
     {
+        $this->acceptLanguage();
         $this->row();
         $this->set();
+    }
+
+    /**
+     * @return void
+     */
+    protected function acceptLanguage(): void
+    {
+        $this->acceptLanguage = strval($this->request->header('Accept-Language'));
     }
 
     /**
@@ -21,8 +35,10 @@ class Request extends ActionAbstract
     protected function row(): void
     {
         $this->row = $this->rowSession()
+            ?: $this->rowLocale()
             ?: $this->rowCode()
-            ?: $this->rowDefault();
+            ?: $this->rowDefault()
+            ?: $this->rowFirst();
     }
 
     /**
@@ -44,24 +60,47 @@ class Request extends ActionAbstract
     /**
      * @return ?\App\Domains\Language\Model\Language
      */
+    protected function rowLocale(): ?Model
+    {
+        if (empty($locale = $this->rowLocaleValue())) {
+            return null;
+        }
+
+        return Model::query()
+            ->selectSession()
+            ->byLocale($locale)
+            ->first();
+    }
+
+    /**
+     * @return ?string
+     */
+    protected function rowLocaleValue(): ?string
+    {
+        return preg_match('/^[a-z]+\-[A-Z]+/', $this->acceptLanguage, $matches)
+            ? str_replace('-', '_', $matches[0])
+            : null;
+    }
+
+    /**
+     * @return ?\App\Domains\Language\Model\Language
+     */
     protected function rowCode(): ?Model
     {
         return Model::query()
             ->selectSession()
-            ->byCode($this->rowCodeFromHeader())
+            ->byLocaleCode($this->rowCodeValue())
             ->first();
     }
 
     /**
      * @return string
      */
-    protected function rowCodeFromHeader(): string
+    protected function rowCodeValue(): string
     {
-        if (preg_match('/^[a-zA-Z]+/', (string)$this->request->header('Accept-Language'), $matches)) {
-            return $matches[0];
-        }
-
-        return config('app.locale');
+        return preg_match('/^[a-zA-Z]+/', $this->acceptLanguage, $matches)
+            ? $matches[0]
+            : explode('_', config('app.locale'))[0];
     }
 
     /**
@@ -76,12 +115,21 @@ class Request extends ActionAbstract
     }
 
     /**
+     * @return \App\Domains\Language\Model\Language
+     */
+    protected function rowFirst(): Model
+    {
+        return Model::query()
+            ->selectSession()
+            ->orderByFirst()
+            ->first();
+    }
+
+    /**
      * @return void
      */
     protected function set(): void
     {
-        if ($this->row) {
-            $this->factory()->action()->set();
-        }
+        $this->factory()->action()->set();
     }
 }

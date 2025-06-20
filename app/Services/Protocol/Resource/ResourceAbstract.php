@@ -7,7 +7,7 @@ abstract class ResourceAbstract
     /**
      * @var array
      */
-    protected array $attributes;
+    protected array $attributes = [];
 
     /**
      * @return string
@@ -22,7 +22,7 @@ abstract class ResourceAbstract
     /**
      * @return string
      */
-    abstract public function body(): string;
+    abstract public function message(): string;
 
     /**
      * @return string
@@ -84,5 +84,21 @@ abstract class ResourceAbstract
     public function data(): array
     {
         return $this->attribute(__FUNCTION__, []);
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * @return string
+     */
+    public function toJson(): string
+    {
+        return json_encode($this->attributes, JSON_INVALID_UTF8_IGNORE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }

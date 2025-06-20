@@ -83,6 +83,7 @@ class CheckPosition extends ActionAbstract
     protected function dataSpeed(): void
     {
         $this->data['speed'] = match ($this->position->user->preferences['units']['distance'] ?? 'kilometer') {
+            'knot' => $this->position->speed * 0.539957,
             'mile' => $this->position->speed * 0.621371,
             default => $this->position->speed,
         };
@@ -133,7 +134,7 @@ class CheckPosition extends ActionAbstract
     protected function checkLast(Model $row): bool
     {
         $notification = AlarmNotificationModel::query()
-            ->selectOnly('closed_at')
+            ->select('closed_at')
             ->byAlarmId($row->id)
             ->orderByLast()
             ->first();
