@@ -2,9 +2,9 @@
 
 namespace App\Domains\AlarmNotification\Test\Factory;
 
-use App\Domains\CoreApp\Test\Factory\FactoryAbstract;
 use App\Domains\Alarm\Model\Alarm as AlarmModel;
 use App\Domains\AlarmNotification\Model\AlarmNotification as Model;
+use App\Domains\CoreApp\Test\Factory\FactoryAbstract;
 use App\Domains\Position\Model\Position as PositionModel;
 use App\Domains\Trip\Model\Trip as TripModel;
 use App\Domains\Vehicle\Model\Vehicle as VehicleModel;
@@ -27,6 +27,7 @@ class AlarmNotification extends FactoryAbstract
 
             'point' => Model::pointFromLatitudeLongitude(42.34818, -7.9126),
 
+            'dashboard' => false,
             'telegram' => false,
 
             'date_at' => date('Y-m-d H:i:s'),

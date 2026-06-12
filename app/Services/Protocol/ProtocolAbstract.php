@@ -61,4 +61,14 @@ abstract class ProtocolAbstract
 
         return $resources;
     }
+
+    /**
+     * @param string $message
+     *
+     * @return bool
+     */
+    protected function messageIsValidHex(string $message): bool
+    {
+        return $message && (strlen($message) % 2 === 0) && ctype_xdigit($message);
+    }
 }

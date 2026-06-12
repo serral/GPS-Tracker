@@ -2,8 +2,8 @@
 
 namespace App\Domains\Trip\Model\Builder;
 
-use App\Domains\Position\Model\Position as PositionModel;
 use App\Domains\CoreApp\Model\Builder\BuilderAbstract;
+use App\Domains\Position\Model\Position as PositionModel;
 
 class Trip extends BuilderAbstract
 {
@@ -262,6 +262,23 @@ class Trip extends BuilderAbstract
     public function orderByEndUtcAtNearest(string $end_utc_at): self
     {
         return $this->orderByRaw('ABS(TIMESTAMPDIFF(MINUTE, `end_utc_at`, ?)) ASC', [$end_utc_at]);
+    }
+
+    /**
+     * @return self
+     */
+    public function selectRelated(): self
+    {
+        return $this->select(
+            'id',
+            'name',
+            'start_at',
+            'start_utc_at',
+            'end_at',
+            'end_utc_at',
+            'time',
+            'distance',
+        );
     }
 
     /**

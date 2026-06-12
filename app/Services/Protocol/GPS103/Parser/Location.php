@@ -97,9 +97,9 @@ class Location extends ParserAbstract
             return $this->cache[__FUNCTION__];
         }
 
-        $degree = (int)substr($this->values[7], 0, 2);
-        $minute = (float)substr($this->values[7], 2);
-        $direction = (float)str_replace(['S', 'N'], ['-1', '1'], $this->values[8]);
+        $degree = intval(substr($this->values[7], 0, 2));
+        $minute = floatval(substr($this->values[7], 2));
+        $direction = floatval(str_replace(['S', 'N'], ['-1', '1'], $this->values[8]));
 
         $latitude = round(($degree + ($minute / 60)) * $direction, 5);
 
@@ -119,9 +119,9 @@ class Location extends ParserAbstract
             return $this->cache[__FUNCTION__];
         }
 
-        $degree = (int)substr($this->values[9], 0, 3);
-        $minute = (float)substr($this->values[9], 3);
-        $direction = (float)str_replace(['W', 'E'], ['-1', '1'], $this->values[10]);
+        $degree = intval(substr($this->values[9], 0, 3));
+        $minute = floatval(substr($this->values[9], 3));
+        $direction = floatval(str_replace(['W', 'E'], ['-1', '1'], $this->values[10]));
 
         $longitude = round(($degree + ($minute / 60)) * $direction, 5);
 
@@ -137,7 +137,7 @@ class Location extends ParserAbstract
      */
     protected function speed(): float
     {
-        return round((float)$this->values[11] * 1.852, 2);
+        return round(floatval($this->values[11]) * 1.852, 2);
     }
 
     /**
@@ -163,11 +163,24 @@ class Location extends ParserAbstract
     {
         $date = str_split($this->values[2], 2);
 
-        if (count($date) !== 6) {
+        if (count($date) < 5) {
             return null;
         }
 
-        return '20'.$date[0].'-'.$date[1].'-'.$date[2].' '.$date[3].':'.$date[4].':'.$date[5];
+        $date = '20'.$date[0].'-'.$date[1].'-'.$date[2].' '.$date[3].':'.$date[4].':'.($date[5] ?? '');
+
+        if (str_ends_with($date, ':') === false) {
+            return $date;
+        }
+
+        if (($this->data['date'] ?? null) !== $date) {
+            $this->data['date'] = $date;
+            $this->data['seconds'] = -5;
+        }
+
+        $this->data['seconds'] += 5;
+
+        return $date.sprintf('%02d', $this->data['seconds']);
     }
 
     /**
@@ -179,6 +192,17 @@ class Location extends ParserAbstract
             $this->latitude(),
             $this->longitude(),
         );
+    }
+
+    /**
+     * @return array
+     */
+    protected function data(): array
+    {
+        return [
+            'date' => $this->data['date'] ?? null,
+            'seconds' => $this->data['seconds'] ?? -5,
+        ];
     }
 
     /**
